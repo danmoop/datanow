@@ -1,0 +1,31 @@
+name: my-api
+subdomain: my-api
+title: "DataNow Payment API"
+description: "API for handling payment processing and reporting for DataNow."
+category: data
+version: v1
+
+routing:
+  type: proxy
+  url: $ROUTING_URL
+  auth:
+    method: header
+    key: "x-pay-signature"
+    value_from_env: PAYMENT_SIGNATURE
+
+operator:
+  currencies:
+    usd: ["USDC"]
+  network: localnet
+
+endpoints:
+  - method: GET
+    path: "auth/buyPremium"
+    description: "Get premium subscription status for the authenticated user."
+    metering:
+      dimensions:
+        - direction: usage
+          unit: requests
+          scale: 1
+          tiers:
+            - price_usd: 10

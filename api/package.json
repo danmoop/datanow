@@ -1,0 +1,22 @@
+{
+  "name": "api",
+  "module": "src/index.ts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "bun --hot src/index.ts",
+    "prettier": "prettier --write ."
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "hono": "^4.12.18",
+    "mongoose": "^9.6.2",
+    "prettier": "^3.8.3",
+    "unpdf": "^1.6.2"
+  }
+}

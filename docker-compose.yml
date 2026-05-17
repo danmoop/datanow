@@ -1,0 +1,84 @@
+services:
+  api:
+    build: ./api
+    image: datanow
+    container_name: datanow_api
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./api/.env
+    depends_on:
+      - mongodb
+      - redis
+      - minio
+      - ollama
+    networks:
+      - datanow
+
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb_container
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - datanow
+
+  redis:
+    image: redis:latest
+    container_name: redis_cache_container
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - datanow
+
+  minio:
+    image: minio/minio:latest
+    container_name: minio_container
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    env_file:
+      - ./.env
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    networks:
+      - datanow
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama_container
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - datanow
+
+  pay:
+    build: ./payment
+    image: pay
+    container_name: pay_container
+    env_file:
+      - ./payment/.env
+    ports:
+      - "1402:1402"
+    volumes:
+      - pay_data:/data
+    networks:
+      - datanow
+
+volumes:
+  mongo_data:
+  redis_data:
+  minio_data:
+  ollama_data:
+  pay_data:
+
+networks:
+  datanow:
+    driver: bridge

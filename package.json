@@ -1,0 +1,19 @@
+{
+  "name": "datanow",
+  "version": "1.0.0",
+  "description": "DataNow is a production-grade, multi-agent AI platform that lets users upload raw data (CSV, PDF, JSON) and interact with it through natural language. A planner agent decomposes user queries into sub-tasks and dispatches them to specialist agents — classification, summarization, anomaly detection, and RAG-based Q&A — each running as an independent microservice.",
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}
