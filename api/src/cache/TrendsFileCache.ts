@@ -13,6 +13,6 @@ export const TrendsFileCache = {
   }
 }
 
-const composeKey = (storageKey: string) => {
+const composeKey = (storageKey: string): string => {
   return `trends-file:${storageKey}`
 }

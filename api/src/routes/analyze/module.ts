@@ -8,8 +8,8 @@ import { FileModule } from '../files/module'
 import { FileUploadModel } from '../../model/fileUpload'
 import { AnalyzeFileCache } from '../../cache/AnalyzeFileCache'
 import { analyzeRateLimiter } from '../../middleware/analyzeRateLimiter'
-import s3 from '../../files/s3'
 import { TrendsFileCache } from '../../cache/TrendsFileCache'
+import s3 from '../../files/s3'
 
 const SUMMARY_PROMPT = fs.readFileSync('src/prompts/summarize.md', 'utf-8')
 const TRENDS_PROMPT = fs.readFileSync('src/prompts/trends.md', 'utf-8')
@@ -18,6 +18,11 @@ const LLM_API_URL = process.env.OLLAMA_URL
 const LLM_MODEL = process.env.OLLAMA_MODEL
 
 type OllamaResponse = { message?: { content?: string } }
+
+type FileResolution = {
+  fileContents: string | object
+  extension: string
+}
 
 async function callLLM(
   systemPrompt: string,
@@ -42,7 +47,7 @@ async function callLLM(
   return response.json() as Promise<OllamaResponse>
 }
 
-async function resolveFile(c: Context, key: string) {
+async function resolveFile(c: Context, key: string): Promise<FileResolution> {
   const user = c.var.user
   const userDB = await UserModel.findOne({ _id: new ObjectId(user.id) })
 
@@ -80,7 +85,7 @@ async function resolveFile(c: Context, key: string) {
 }
 
 export const AnalyzeModule = {
-  analyze: async (c: Context, key: string) => {
+  analyze: async (c: Context, key: string): Promise<OllamaResponse> => {
     const cachedValue = await AnalyzeFileCache.get(key)
 
     if (cachedValue) {
@@ -101,7 +106,7 @@ export const AnalyzeModule = {
     return response
   },
 
-  trends: async (c: Context, key: string) => {
+  trends: async (c: Context, key: string): Promise<OllamaResponse> => {
     const cachedValue = await TrendsFileCache.get(key)
 
     if (cachedValue) {

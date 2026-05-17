@@ -14,7 +14,7 @@ const WINDOW_SECONDS = 3600
  * Limits free users to 3 analyze requests per hour.
  * Premium users have unlimited access.
  */
-export const analyzeRateLimiter = async (c: Context<AppEnv>) => {
+export const analyzeRateLimiter = async (c: Context<AppEnv>): Promise<void> => {
   const { id } = c.var.user
   const userDB = await UserModel.findOne({ _id: new ObjectId(id) }).lean()
 
