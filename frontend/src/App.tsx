@@ -1,6 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 import { useAuth } from "@/context/AuthContext"
-import { LandingPage } from "@/pages/LandingPage"
 import { AuthPage } from "@/pages/AuthPage"
 import { Dashboard } from "@/pages/Dashboard"
 import { UploadPage } from "@/pages/UploadPage"
@@ -19,7 +18,7 @@ function AppContent() {
 
   return (
     <Routes>
-      <Route path="/" element={<LandingPage />} />
+      <Route path="/" element={token ? <Dashboard /> : <AuthPage />} />
       <Route path="/login" element={token ? <Dashboard /> : <AuthPage />} />
       <Route path="/dashboard" element={token ? <Dashboard /> : <AuthPage />} />
       <Route path="/upload" element={token ? <UploadPage /> : <AuthPage />} />

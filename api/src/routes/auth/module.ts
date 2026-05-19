@@ -1,4 +1,5 @@
 import type { Context } from 'hono'
+import { ObjectId } from 'mongodb'
 import { UserModel } from '../../model/user'
 import { sign } from 'hono/jwt'
 import { AppError } from '../../errors'
@@ -59,6 +60,11 @@ export const AuthModule = {
   },
 
   buyPremium: async (userId: string): Promise<void> => {
+    const userDB = await UserModel.findOne({ _id: new ObjectId(userId) })
+    if (userDB) {
+      throw new AppError(404, 'User not found')
+    }
+
     await UserModel.findByIdAndUpdate(userId, { isPremium: true })
   }
 }

@@ -34,9 +34,12 @@ export const analyzeRateLimiter = async (c: Context<AppEnv>): Promise<void> => {
   }
 
   if (count > FREE_TIER_LIMIT) {
+    const remainingSeconds =
+      WINDOW_SECONDS - ((Date.now() / 1000) % WINDOW_SECONDS)
+
     throw new AppError(
       429,
-      'Rate limit exceeded. Upgrade to premium for unlimited access.'
+      `Rate limit exceeded. Upgrade to premium for unlimited access or try again in ${remainingSeconds} seconds.`
     )
   }
 }
