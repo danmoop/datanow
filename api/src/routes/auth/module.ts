@@ -60,8 +60,8 @@ export const AuthModule = {
   },
 
   buyPremium: async (userId: string): Promise<void> => {
-    const userDB = await UserModel.findOne({ _id: new ObjectId(userId) })
-    if (userDB) {
+    const userDB = await UserModel.findOne({ _id: new ObjectId(userId) }).lean()
+    if (!userDB) {
       throw new AppError(404, 'User not found')
     }
 

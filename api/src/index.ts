@@ -35,7 +35,7 @@ app.use(
   })
 )
 
-await mongoose.connect(process.env.MONGO_URI)
+await mongoose.connect(`${process.env.MONGO_URI}?replicaSet=rs0`)
 
 app.get('/', async (c) => {
   return c.json({ message: 'Welcome to the DataNow API' })

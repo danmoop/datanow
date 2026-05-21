@@ -1,4 +1,5 @@
 import type { Context } from 'hono'
+import mongoose from 'mongoose'
 import { ObjectId } from 'mongodb'
 import { randomUUIDv7, type S3File } from 'bun'
 import { UserModel } from '../../model/user'
@@ -29,39 +30,51 @@ export const FileModule = {
     const userId = c.var.user.id
     const fileId = randomUUIDv7()
     const ext = file.name.split('.').pop()
-    const key = `${userId}/${fileId}.${ext}`
+    const storageKey = `${userId}/${fileId}.${ext}`
 
-    const s3file = s3.file(key)
-    await s3file.write(await file.arrayBuffer(), { type: file.type })
+    const session = await mongoose.startSession()
 
-    const fileUpload = {
-      userId: new ObjectId(userId),
-      filename: file.name,
-      fileType: ext,
-      storageKey: key,
-      fileSizeBytes: file.size,
-      uploadedAt: new Date()
-    }
+    try {
+      await session.withTransaction(async () => {
+        const s3file = s3.file(storageKey)
+        await s3file.write(await file.arrayBuffer(), { type: file.type })
 
-    await UserModel.findByIdAndUpdate(
-      {
-        _id: new ObjectId(userId)
-      },
-      {
-        $push: {
-          fileUploads: fileUpload
+        const fileUpload = {
+          userId: new ObjectId(userId),
+          filename: file.name,
+          fileType: ext,
+          storageKey,
+          fileSizeBytes: file.size,
+          uploadedAt: new Date()
         }
-      }
-    )
 
-    const upload = new FileUploadModel(fileUpload)
-    await upload.save()
+        await UserModel.findByIdAndUpdate(
+          {
+            _id: new ObjectId(userId)
+          },
+          {
+            $push: {
+              fileUploads: fileUpload
+            }
+          },
+          { session }
+        )
+
+        const upload = new FileUploadModel(fileUpload)
+        await upload.save({ session })
+      })
+    } catch (err) {
+      await s3.delete(storageKey)
+      throw err
+    } finally {
+      await session.endSession()
+    }
   },
 
   download: async (c: Context, storageKey: string): Promise<S3File> => {
     const userId = c.var.user.id
 
-    if (!FileModule.exists(storageKey)) {
+    if (!(await FileModule.exists(storageKey))) {
       throw new AppError(404, 'File does not exist')
     }
 
@@ -88,7 +101,7 @@ export const FileModule = {
   delete: async (c: Context, storageKey: string): Promise<void> => {
     const userId = c.var.user.id
 
-    if (!FileModule.exists(storageKey)) {
+    if (!(await FileModule.exists(storageKey))) {
       throw new AppError(404, 'File does not exist')
     }
 
@@ -102,13 +115,22 @@ export const FileModule = {
       throw new AppError(403, 'Unauthorized to delete this file')
     }
 
-    await FileUploadModel.deleteOne({ storageKey })
-    await UserModel.findByIdAndUpdate(
-      { _id: new ObjectId(userId) },
-      { $pull: { fileUploads: { storageKey } } }
-    )
+    const session = await mongoose.startSession()
 
-    await s3.delete(storageKey)
+    try {
+      await session.withTransaction(async () => {
+        await FileUploadModel.deleteOne({ storageKey }, { session })
+        await UserModel.findByIdAndUpdate(
+          { _id: new ObjectId(userId) },
+          { $pull: { fileUploads: { storageKey } } },
+          { session }
+        )
+
+        await s3.delete(storageKey)
+      })
+    } finally {
+      await session.endSession()
+    }
   },
 
   exists: async (filename: string): Promise<boolean> => {

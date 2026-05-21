@@ -34,8 +34,9 @@ export const analyzeRateLimiter = async (c: Context<AppEnv>): Promise<void> => {
   }
 
   if (count > FREE_TIER_LIMIT) {
-    const remainingSeconds =
+    const remainingSeconds = Math.round(
       WINDOW_SECONDS - ((Date.now() / 1000) % WINDOW_SECONDS)
+    )
 
     throw new AppError(
       429,
