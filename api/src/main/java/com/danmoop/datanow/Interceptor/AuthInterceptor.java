@@ -1,6 +1,8 @@
 package com.danmoop.datanow.Interceptor;
 
 import com.danmoop.datanow.Annotation.Authenticated;
+import com.danmoop.datanow.Model.User;
+import com.danmoop.datanow.Repository.UserRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -14,21 +16,23 @@ import org.springframework.web.servlet.HandlerInterceptor;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 
 @Component
 public class AuthInterceptor implements HandlerInterceptor {
 
-  public static final String CLAIMS_ATTR = "jwtClaims";
+  public static final String USER_ATTR = "user";
 
   private final SecretKey jwtKey;
+  private final UserRepository userRepository;
 
-  public AuthInterceptor(@Value("${jwt.secret}") String jwtSecret) {
+  public AuthInterceptor(@Value("${jwt.secret}") String jwtSecret, UserRepository userRepository) {
     this.jwtKey = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
+    this.userRepository = userRepository;
   }
 
   @Override
-  public boolean preHandle(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull Object handler)
-    throws Exception {
+  public boolean preHandle(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull Object handler) throws Exception {
     if (!(handler instanceof HandlerMethod method)) {
       return true;
     }
@@ -36,15 +40,19 @@ public class AuthInterceptor implements HandlerInterceptor {
     // If a method has an @Authenticated annotation requiring Auth
     if (method.hasMethodAnnotation(Authenticated.class)) {
       String authHeader = request.getHeader("Authorization");
+
       if (authHeader != null && authHeader.startsWith("Bearer ")) {
         try {
           String token = authHeader.substring(7);
           Claims claims = Jwts.parser().verifyWith(jwtKey).build().parseSignedClaims(token).getPayload();
-          request.setAttribute(CLAIMS_ATTR, claims);
+
+          Optional<User> user = userRepository.findByEmail(claims.get("email", String.class));
+          request.setAttribute(USER_ATTR, user.orElse(null));
         } catch (Exception ignored) {
         }
       }
-      if (request.getAttribute(CLAIMS_ATTR) == null) {
+
+      if (request.getAttribute(USER_ATTR) == null) {
         response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
         return false;
       }

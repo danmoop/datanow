@@ -1,10 +1,11 @@
 package com.danmoop.datanow.Service;
 
+import com.danmoop.datanow.Cache.RedisCache;
 import com.danmoop.datanow.Model.User;
 import com.danmoop.datanow.Repository.UserRepository;
-import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -13,8 +14,10 @@ import org.springframework.web.server.ResponseStatusException;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.UUID;
 
 @Service
 public class AuthService {
@@ -22,18 +25,12 @@ public class AuthService {
   private final UserRepository userRepository;
   private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
   private final SecretKey jwtKey;
+  private final RedisCache redisCache;
 
-  public AuthService(UserRepository userRepository, @Value("${jwt.secret}") String jwtSecret) {
+  public AuthService(UserRepository userRepository, @Value("${jwt.secret}") String jwtSecret, RedisCache redisCache) {
     this.userRepository = userRepository;
     this.jwtKey = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
-  }
-
-  public User getUser(Claims claims) {
-    String email = claims.get("email", String.class);
-
-    return userRepository.findByEmail(email).orElseThrow(
-      () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")
-    );
+    this.redisCache = redisCache;
   }
 
   public void register(User body) {
@@ -72,5 +69,13 @@ public class AuthService {
       .expiration(new Date(now + 3_600_000))
       .signWith(jwtKey)
       .compact();
+  }
+
+  public String getNonce(HttpServletRequest request) {
+    String nonce = UUID.randomUUID().toString();
+    User user = (User) request.getAttribute("user");
+
+    redisCache.set("payment:nonce:" + nonce, user.getId(), Duration.ofMinutes(5));
+    return nonce;
   }
 }
