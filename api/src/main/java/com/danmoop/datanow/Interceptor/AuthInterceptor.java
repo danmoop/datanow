@@ -10,8 +10,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import javax.crypto.SecretKey;
@@ -47,7 +49,7 @@ public class AuthInterceptor implements HandlerInterceptor {
           Claims claims = Jwts.parser().verifyWith(jwtKey).build().parseSignedClaims(token).getPayload();
 
           Optional<User> user = userRepository.findByEmail(claims.get("email", String.class));
-          request.setAttribute(USER_ATTR, user.orElse(null));
+          request.setAttribute(USER_ATTR, user.orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid token")));
         } catch (Exception ignored) {
         }
       }
