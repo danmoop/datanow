@@ -39,6 +39,7 @@ public class FileService {
     if (!user.isPremium() && file.getSize() > 5 * 1024 * 1024) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "File size exceeds the 5MB limit for free users");
     }
+
     if (file.getSize() > 50 * 1024 * 1024) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "File size exceeds the 50MB limit");
     }
@@ -61,15 +62,13 @@ public class FileService {
 
     FileUpload fileUpload = new FileUpload(userId, file.getOriginalFilename(), fileType, storageKey, file.getSize(), new Date());
 
-    System.out.println(fileUpload);
-
-    fileUploadRepository.save(fileUpload);
-
     User userDB = userRepository.findByEmail(user.getEmail()).orElseThrow(() ->
       new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")
     );
     userDB.getFileUploads().add(fileUpload);
     userRepository.save(userDB);
+
+    fileUploadRepository.save(fileUpload);
   }
 
   public byte[] download(String storageKey) throws IOException {
@@ -95,18 +94,18 @@ public class FileService {
       throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized to delete this file");
     }
 
-    s3Client.deleteObject(DeleteObjectRequest.builder()
-      .bucket(bucket)
-      .key(storageKey)
-      .build());
+    fileUploadRepository.delete(dbFileupload);
 
     User userDB = userRepository.findByEmail(user.getEmail()).orElseThrow(() ->
       new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")
     );
-
     userDB.getFileUploads().remove(dbFileupload);
     userRepository.save(userDB);
-    fileUploadRepository.delete(dbFileupload);
+
+    s3Client.deleteObject(DeleteObjectRequest.builder()
+      .bucket(bucket)
+      .key(storageKey)
+      .build());
   }
 
   public boolean exists(String storageKey) {

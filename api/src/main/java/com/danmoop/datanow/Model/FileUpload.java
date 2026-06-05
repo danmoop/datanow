@@ -13,7 +13,6 @@ import java.util.Date;
 public class FileUpload {
   @Id
   private String id;
-
   private final String userId;
   private final String filename;
   private final String storageKey;

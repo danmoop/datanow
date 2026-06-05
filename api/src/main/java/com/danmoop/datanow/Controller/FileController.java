@@ -33,8 +33,8 @@ public class FileController {
 
   @Authenticated
   @GetMapping("/exists/{filename}")
-  public boolean exists(@PathVariable String filename) {
-    return fileService.exists(filename);
+  public ResponseEntity<Map<String, Boolean>> exists(@PathVariable String filename) {
+    return ResponseEntity.ok(Map.of("exists", fileService.exists(filename)));
   }
 
   @Authenticated
