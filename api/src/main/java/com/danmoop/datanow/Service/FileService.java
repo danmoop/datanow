@@ -52,19 +52,18 @@ public class FileService {
     String storageKey = userId + "/" + fileId + "." + fileType;
 
     s3Client.putObject(
-      PutObjectRequest.builder()
-        .bucket(bucket)
-        .key(storageKey)
-        .contentType(file.getContentType())
-        .build(),
-      RequestBody.fromBytes(file.getBytes())
-    );
+        PutObjectRequest.builder()
+            .bucket(bucket)
+            .key(storageKey)
+            .contentType(file.getContentType())
+            .build(),
+        RequestBody.fromBytes(file.getBytes()));
 
-    FileUpload fileUpload = new FileUpload(userId, file.getOriginalFilename(), fileType, storageKey, file.getSize(), new Date());
+    FileUpload fileUpload = new FileUpload(userId, file.getOriginalFilename(), fileType, storageKey, file.getSize(),
+        new Date());
 
-    User userDB = userRepository.findByEmail(user.getEmail()).orElseThrow(() ->
-      new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")
-    );
+    User userDB = userRepository.findByEmail(user.getEmail())
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
     userDB.getFileUploads().add(fileUpload);
     userRepository.save(userDB);
 
@@ -73,11 +72,10 @@ public class FileService {
 
   public byte[] download(String storageKey) throws IOException {
     ResponseInputStream<GetObjectResponse> response = s3Client.getObject(
-      GetObjectRequest.builder()
-        .bucket(bucket)
-        .key(storageKey)
-        .build()
-    );
+        GetObjectRequest.builder()
+            .bucket(bucket)
+            .key(storageKey)
+            .build());
     return response.readAllBytes();
   }
 
@@ -86,9 +84,8 @@ public class FileService {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "File does not exist");
     }
 
-    FileUpload dbFileupload = fileUploadRepository.findByStorageKey(storageKey).orElseThrow(() ->
-      new ResponseStatusException(HttpStatus.NOT_FOUND, "File metadata not found in database")
-    );
+    FileUpload dbFileupload = fileUploadRepository.findByStorageKey(storageKey)
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "File metadata not found in database"));
 
     if (!dbFileupload.getUserId().equals(user.getId())) {
       throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized to delete this file");
@@ -96,24 +93,23 @@ public class FileService {
 
     fileUploadRepository.delete(dbFileupload);
 
-    User userDB = userRepository.findByEmail(user.getEmail()).orElseThrow(() ->
-      new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")
-    );
-    userDB.getFileUploads().remove(dbFileupload);
+    User userDB = userRepository.findByEmail(user.getEmail())
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+    userDB.getFileUploads().removeIf(file -> file.getStorageKey().equals(storageKey));
     userRepository.save(userDB);
 
     s3Client.deleteObject(DeleteObjectRequest.builder()
-      .bucket(bucket)
-      .key(storageKey)
-      .build());
+        .bucket(bucket)
+        .key(storageKey)
+        .build());
   }
 
   public boolean exists(String storageKey) {
     try {
       s3Client.headObject(HeadObjectRequest.builder()
-        .bucket(bucket)
-        .key(storageKey)
-        .build());
+          .bucket(bucket)
+          .key(storageKey)
+          .build());
       return true;
     } catch (NoSuchKeyException e) {
       return false;

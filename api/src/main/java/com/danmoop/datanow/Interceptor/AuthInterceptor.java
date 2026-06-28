@@ -34,7 +34,8 @@ public class AuthInterceptor implements HandlerInterceptor {
   }
 
   @Override
-  public boolean preHandle(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull Object handler) throws Exception {
+  public boolean preHandle(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
+                           @NonNull Object handler) throws Exception {
     if (!(handler instanceof HandlerMethod method)) {
       return true;
     }
@@ -49,7 +50,8 @@ public class AuthInterceptor implements HandlerInterceptor {
           Claims claims = Jwts.parser().verifyWith(jwtKey).build().parseSignedClaims(token).getPayload();
 
           Optional<User> user = userRepository.findByEmail(claims.get("email", String.class));
-          request.setAttribute(USER_ATTR, user.orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid token")));
+          request.setAttribute(USER_ATTR,
+            user.orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid token")));
         } catch (Exception ignored) {
         }
       }

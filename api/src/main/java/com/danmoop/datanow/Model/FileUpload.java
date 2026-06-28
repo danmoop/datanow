@@ -20,7 +20,8 @@ public class FileUpload {
   private final long fileSizeBytes;
   private final Date uploadedAt;
 
-  public FileUpload(String userId, String filename, String fileType, String storageKey, long fileSizeBytes, Date uploadedAt) {
+  public FileUpload(String userId, String filename, String fileType, String storageKey, long fileSizeBytes,
+      Date uploadedAt) {
     this.userId = userId;
     this.filename = filename;
     this.fileType = fileType;

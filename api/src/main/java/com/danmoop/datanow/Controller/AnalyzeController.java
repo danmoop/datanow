@@ -1,7 +1,9 @@
 package com.danmoop.datanow.Controller;
 
 import com.danmoop.datanow.Annotation.Authenticated;
+import com.danmoop.datanow.Model.User;
 import com.danmoop.datanow.Service.AnalyzeService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,8 +23,10 @@ public class AnalyzeController {
 
   @Authenticated
   @PostMapping("/summary")
-  public ResponseEntity<Map<String, String>> getSummary(@RequestParam String key) {
-    String result = analyzeService.analyze(key);
+  public ResponseEntity<Map<String, String>> getSummary(@RequestParam String key, HttpServletRequest request) {
+    User user = (User) request.getAttribute("user");
+
+    String result = analyzeService.analyze(user, key);
     return ResponseEntity.ok(Map.of("result", result));
   }
 

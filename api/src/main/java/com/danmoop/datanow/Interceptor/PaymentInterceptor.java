@@ -21,7 +21,8 @@ public class PaymentInterceptor implements HandlerInterceptor {
   }
 
   @Override
-  public boolean preHandle(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull Object handler) throws IOException {
+  public boolean preHandle(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
+                           @NonNull Object handler) throws IOException {
     if (!(handler instanceof HandlerMethod method)) {
       return true;
     }
