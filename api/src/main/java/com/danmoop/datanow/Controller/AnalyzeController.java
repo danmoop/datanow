@@ -23,7 +23,8 @@ public class AnalyzeController {
 
   @Authenticated
   @PostMapping("/summary")
-  public ResponseEntity<Map<String, String>> getSummary(@RequestParam String key, HttpServletRequest request) {
+  public ResponseEntity<Map<String, String>> getSummary(@RequestParam String key, HttpServletRequest request)
+      throws Exception {
     User user = (User) request.getAttribute("user");
 
     String result = analyzeService.analyze(user, key);
@@ -32,8 +33,11 @@ public class AnalyzeController {
 
   @Authenticated
   @PostMapping("/trends")
-  public ResponseEntity<Map<String, String>> getTrends(@RequestParam String key) {
-    String result = analyzeService.trends(key);
+  public ResponseEntity<Map<String, String>> getTrends(@RequestParam String key, HttpServletRequest request)
+      throws Exception {
+    User user = (User) request.getAttribute("user");
+
+    String result = analyzeService.trends(user, key);
     return ResponseEntity.ok(Map.of("result", result));
   }
 }
