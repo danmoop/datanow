@@ -73,7 +73,6 @@ public class AnalyzeService {
             .getInputStream()
             .readAllBytes(),
         StandardCharsets.UTF_8);
-
   }
 
   public String analyze(User user, String key) throws Exception {
@@ -105,7 +104,7 @@ public class AnalyzeService {
     String fileContents = readFile(user, key);
     String aiResponse = callLLM(TRENDS_PROMPT, fileContents);
 
-    analyzeFileCache.set(key, aiResponse);
+    trendsFileCache.set(key, aiResponse);
 
     return aiResponse;
   }

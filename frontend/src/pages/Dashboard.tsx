@@ -13,8 +13,8 @@ import {
 } from "lucide-react"
 import { uploadApi, paymentApi, type FileUpload } from "@/lib/api"
 
-const StatusBadge = ({ isPremium }: { isPremium: boolean }) => {
-  if (isPremium) {
+const StatusBadge = ({ premium }: { premium: boolean }) => {
+  if (premium) {
     return (
       <div className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1 text-sm font-semibold text-amber-900 dark:bg-amber-900/30 dark:text-amber-400">
         <Crown className="h-4 w-4" />
@@ -166,9 +166,9 @@ export const Dashboard = () => {
                   : "—"}
               </p>
             </div>
-            <StatusBadge isPremium={user?.isPremium ?? false} />
+            <StatusBadge premium={user?.premium ?? false} />
           </div>
-          {!user?.isPremium && (
+          {!user?.premium && (
             <div className="mt-4 border-t border-border pt-4">
               <div className="flex items-center justify-between">
                 <div>

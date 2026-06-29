@@ -18,7 +18,7 @@ export interface UserResponse {
   _id: string
   email: string
   name?: string
-  isPremium: boolean
+  premium: boolean
   fileUploads: FileUpload[]
   createdAt: string
 }

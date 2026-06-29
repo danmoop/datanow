@@ -33,6 +33,11 @@ public class AuthService {
     this.redisCache = redisCache;
   }
 
+  public User getUserById(String userId) {
+    return userRepository.findById(userId).orElseThrow(
+        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+  }
+
   public void register(User body) {
     if (body.getEmail() == null || body.getPassword() == null) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email and password are required");
@@ -77,5 +82,13 @@ public class AuthService {
 
     redisCache.set("payment:nonce:" + nonce, user.getId(), Duration.ofMinutes(5));
     return nonce;
+  }
+
+  public void buyPremium(String userId) {
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+    user.setPremium(true);
+    userRepository.save(user);
   }
 }
