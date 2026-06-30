@@ -1,13 +1,12 @@
 package com.danmoop.datanow.Middleware;
 
-import java.util.Date;
-
+import com.danmoop.datanow.Cache.RedisCache;
+import com.danmoop.datanow.Model.User;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.danmoop.datanow.Cache.RedisCache;
-import com.danmoop.datanow.Model.User;
+import java.util.Date;
 
 @Service
 public class Middleware {
@@ -23,11 +22,11 @@ public class Middleware {
     if (user.isPremium()) {
       return;
     }
-    
+
     String cacheKey = "ratelimit:analyze:" + user.getId();
-    
+
     long count = redisCache.incr(cacheKey, 1);
-    
+
     if (count == 1) {
       redisCache.expire(cacheKey, GENERAL_CACHE_TTL);
     }
@@ -35,11 +34,11 @@ public class Middleware {
     if (count > FREE_TIER_LIMIT) {
       long now = new Date().getTime();
       long remainingSeconds = Math.round(
-      GENERAL_CACHE_TTL - ((now / 1000) % GENERAL_CACHE_TTL));
+              GENERAL_CACHE_TTL - ((now / 1000) % GENERAL_CACHE_TTL));
 
       throw new ResponseStatusException(
-        HttpStatus.TOO_MANY_REQUESTS, 
-        "Rate limit exceeded. Upgrade to premium for unlimited access or try again in " + remainingSeconds + " seconds."
+              HttpStatus.TOO_MANY_REQUESTS,
+              "Rate limit exceeded. Upgrade to premium for unlimited access or try again in " + remainingSeconds + " seconds."
       );
     }
   }

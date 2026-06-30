@@ -1,12 +1,11 @@
 package com.danmoop.datanow.Model;
 
-import java.util.Date;
-import java.util.List;
-
+import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import lombok.Data;
+import java.util.Date;
+import java.util.List;
 
 @Document(collection = "users")
 @Data

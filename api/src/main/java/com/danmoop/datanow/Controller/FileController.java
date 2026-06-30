@@ -25,7 +25,7 @@ public class FileController {
   @Authenticated
   @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<Map<String, String>> uploadFile(@RequestPart("file") MultipartFile file,
-      HttpServletRequest request) throws Exception {
+                                                        HttpServletRequest request) throws Exception {
     User user = (User) request.getAttribute("user");
 
     fileService.upload(file, user);

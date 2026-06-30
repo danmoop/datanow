@@ -1,25 +1,19 @@
 package com.danmoop.datanow.Controller;
 
-import java.util.Map;
-
+import com.danmoop.datanow.Annotation.Authenticated;
+import com.danmoop.datanow.Annotation.PaymentRequired;
+import com.danmoop.datanow.Cache.RedisCache;
+import com.danmoop.datanow.Model.User;
+import com.danmoop.datanow.Service.AuthService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.danmoop.datanow.Annotation.Authenticated;
-import com.danmoop.datanow.Cache.RedisCache;
-import com.danmoop.datanow.Model.User;
-import com.danmoop.datanow.Service.AuthService;
-
-import jakarta.servlet.http.HttpServletRequest;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
@@ -58,7 +52,7 @@ public class AuthController {
     return ResponseEntity.ok(Map.of("nonce", authService.getNonce(request)));
   }
 
-  // @PaymentRequired
+  @PaymentRequired
   @GetMapping("/buyPremium")
   public ResponseEntity<String> buyPremium(@RequestParam String nonce, @RequestParam String originURL) {
     if (nonce == null) {
@@ -68,7 +62,7 @@ public class AuthController {
     String cacheKey = "payment:nonce:" + nonce;
 
     String userId = redisCache.get(cacheKey)
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid or expired nonce"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid or expired nonce"));
 
     redisCache.delete(cacheKey);
     authService.buyPremium(userId);

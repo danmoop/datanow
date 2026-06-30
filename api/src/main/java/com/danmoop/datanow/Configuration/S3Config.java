@@ -28,11 +28,11 @@ public class S3Config {
   @Bean
   public S3Client s3Client() {
     return S3Client.builder()
-      .endpointOverride(URI.create(endpoint))
-      .credentialsProvider(StaticCredentialsProvider.create(
-        AwsBasicCredentials.create(accessKey, secretKey)))
-      .region(Region.of(region))
-      .forcePathStyle(true)
-      .build();
+            .endpointOverride(URI.create(endpoint))
+            .credentialsProvider(StaticCredentialsProvider.create(
+                    AwsBasicCredentials.create(accessKey, secretKey)))
+            .region(Region.of(region))
+            .forcePathStyle(true)
+            .build();
   }
 }

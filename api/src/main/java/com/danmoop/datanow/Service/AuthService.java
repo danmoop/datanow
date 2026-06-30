@@ -35,7 +35,7 @@ public class AuthService {
 
   public User getUserById(String userId) {
     return userRepository.findById(userId).orElseThrow(
-        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+            () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
   }
 
   public void register(User body) {
@@ -59,7 +59,7 @@ public class AuthService {
     }
 
     User user = userRepository.findByEmail(body.getEmail())
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid email or password"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid email or password"));
 
     if (!passwordEncoder.matches(body.getPassword(), user.getPassword())) {
       throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid email or password");
@@ -67,13 +67,13 @@ public class AuthService {
 
     long now = System.currentTimeMillis();
     return Jwts.builder()
-        .claim("id", user.getId())
-        .claim("email", user.getEmail())
-        .claim("isPremium", user.isPremium())
-        .issuedAt(new Date(now))
-        .expiration(new Date(now + 3_600_000))
-        .signWith(jwtKey)
-        .compact();
+            .claim("id", user.getId())
+            .claim("email", user.getEmail())
+            .claim("isPremium", user.isPremium())
+            .issuedAt(new Date(now))
+            .expiration(new Date(now + 3_600_000))
+            .signWith(jwtKey)
+            .compact();
   }
 
   public String getNonce(HttpServletRequest request) {
@@ -86,7 +86,7 @@ public class AuthService {
 
   public void buyPremium(String userId) {
     User user = userRepository.findById(userId)
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
     user.setPremium(true);
     userRepository.save(user);

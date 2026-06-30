@@ -1,7 +1,9 @@
 services:
   api:
-    build: ./api
-    image: datanow
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    image: datanow:local
     container_name: datanow_api
     ports:
       - "3000:3000"

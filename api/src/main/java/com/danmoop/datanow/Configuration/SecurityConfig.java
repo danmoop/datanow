@@ -17,12 +17,12 @@ public class SecurityConfig {
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity http) {
     return http
-      .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-      .csrf(AbstractHttpConfigurer::disable)
-      .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
-      .formLogin(AbstractHttpConfigurer::disable)
-      .httpBasic(AbstractHttpConfigurer::disable)
-      .build();
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .csrf(AbstractHttpConfigurer::disable)
+            .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+            .formLogin(AbstractHttpConfigurer::disable)
+            .httpBasic(AbstractHttpConfigurer::disable)
+            .build();
   }
 
   private CorsConfigurationSource corsConfigurationSource() {

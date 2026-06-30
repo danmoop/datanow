@@ -51,7 +51,7 @@ public class AuthInterceptor implements HandlerInterceptor {
 
           Optional<User> user = userRepository.findByEmail(claims.get("email", String.class));
           request.setAttribute(USER_ATTR,
-            user.orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid token")));
+                  user.orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid token")));
         } catch (Exception ignored) {
         }
       }
